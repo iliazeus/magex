@@ -16,7 +16,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_CONFIGURATION_TYPES Debug Profile Release)
 set(CMAKE_BUILD_TYPE Debug)
 
-set(CMAKE_CXX_FLAGS "-std=c++14")
+set(CMAKE_CXX_FLAGS "-std=c++17")
 set(CMAKE_C_FLAGS "-std=c99")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -Wall")
