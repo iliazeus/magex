@@ -5,3 +5,6 @@ set(SOURCES
 )
 
 add_library(libmagex ${SOURCES})
+set_target_properties(libmagex PROPERTIES
+  LIBRARY_OUTPUT_DIR ../lib
+)

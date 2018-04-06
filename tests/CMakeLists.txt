@@ -1,6 +1,6 @@
-find_package(GTest REQUIRED)
-find_package(Threads REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(CMAKE_POLICY_DEFAULT_CMP0048 OLD)
+add_subdirectory(../gtest ${CMAKE_BINARY_DIR}/gtest)
 
 set(SOURCES
     nfa.cc
@@ -9,8 +9,10 @@ set(SOURCES
 
 add_executable(test_magex ${SOURCES})
 target_link_libraries(test_magex
-    ${GTEST_BOTH_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
+    gtest gtest_main
     libmagex
+)
+set_target_properties(test_magex PROPERTIES
+  RUNTIME_OUTPUT_DIR ../bin
 )
 add_test(NAME test_magex COMMAND test_magex)

@@ -1,4 +1,4 @@
-sudo: true
+sudo: false
 
 language: cpp
 
@@ -20,9 +20,6 @@ matrix:
 
 before_install:
   - eval "${MATRIX_EVAL}"
-
-install:
-  - ./install-gtest.sh
 
 script:
   - cmake .
