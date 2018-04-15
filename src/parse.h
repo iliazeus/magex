@@ -6,8 +6,8 @@
 #define PARSE_H_
 
 #include <optional>
-#include <string>
 #include <stack>
+#include <string>
 
 #include "./nfa.h"
 
@@ -30,23 +30,22 @@ class PrecedenceParser {
     kIterate,
     kOptional,
   };
-  std::stack<NFA> valueStack_;
-  std::stack<Op> opStack_;
+  std::stack<NFA> value_stack_;
+  std::stack<Op> op_stack_;
   bool error_ = false;
 
  private:
   void Reduce(Op op);
 };
 
-template<class CharIt>
+template <class CharIt>
 std::optional<NFA> ParseRegexPrecedence(CharIt begin, CharIt end) {
   PrecedenceParser parser;
   for (auto it = begin; it != end; ++it) parser.Consume(*it);
   return parser.Result();
 }
 
-
-template<class CharIt>
+template <class CharIt>
 std::optional<NFA> ParseRegex(CharIt begin, CharIt end) {
   return ParseRegexPrecedence(begin, end);
 }

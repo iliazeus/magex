@@ -1,2 +1,5 @@
 bin/
 lib/
+.vscode
+.idea
+.DS_Store

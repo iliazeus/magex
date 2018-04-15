@@ -7,51 +7,57 @@
 namespace magex {
 
 void PrecedenceParser::Reduce(Op op) {
-  while (!opStack_.empty() && opStack_.top() > op) {
-    switch (opStack_.top()) {
+  while (!op_stack_.empty() && op_stack_.top() > op) {
+    switch (op_stack_.top()) {
       case Op::kEof:
         break;
-
-      case Op::kSum:
-        {
-          if (valueStack_.size() < 2) { error_ = true; return; }
-          NFA valTop = std::move(valueStack_.top());
-          valueStack_.pop();
-          valueStack_.top().Sum(std::move(valTop));
+      case Op::kSum: {
+        if (value_stack_.size() < 2) {
+          error_ = true;
+          return;
         }
+        NFA valTop = std::move(value_stack_.top());
+        value_stack_.pop();
+        value_stack_.top().Sum(std::move(valTop));
         break;
-
+      }
       case Op::kConstant:
         break;
-
-      case Op::kConcatenate:
-        {
-          if (valueStack_.size() < 2) { error_ = true; return; }
-          NFA valTop = std::move(valueStack_.top());
-          valueStack_.pop();
-          valueStack_.top().Concatenate(std::move(valTop));
+      case Op::kConcatenate: {
+        if (value_stack_.size() < 2) {
+          error_ = true;
+          return;
         }
+        NFA valTop = std::move(value_stack_.top());
+        value_stack_.pop();
+        value_stack_.top().Concatenate(std::move(valTop));
         break;
-
+      }
       case Op::kIterate:
-        if (valueStack_.empty()) { error_ = true; return; }
-        valueStack_.top().Iterate();
+        if (value_stack_.empty()) {
+          error_ = true;
+          return;
+        }
+        value_stack_.top().Iterate();
         break;
-
       case Op::kIterateAtLeastOnce:
-        if (valueStack_.empty()) { error_ = true; return; }
-        valueStack_.top().IterateAtLeastOnce();
+        if (value_stack_.empty()) {
+          error_ = true;
+          return;
+        }
+        value_stack_.top().IterateAtLeastOnce();
         break;
-
       case Op::kOptional:
-        if (valueStack_.empty()) { error_ = true; return; }
-        valueStack_.top().Sum(NFA(""));
+        if (value_stack_.empty()) {
+          error_ = true;
+          return;
+        }
+        value_stack_.top().Sum(NFA(""));
         break;
-
-       default:
+      default:
         break;
     }
-    opStack_.pop();
+    op_stack_.pop();
   }
 }
 
@@ -60,62 +66,66 @@ void PrecedenceParser::Consume(char c) {
   switch (c) {
     case ')':
       Reduce(Op::kParenthesisLow);
-      if (opStack_.empty() || opStack_.top() != Op::kParenthesisLow) {
-        error_ = true; return;
+      if (op_stack_.empty() || op_stack_.top() != Op::kParenthesisLow) {
+        error_ = true;
+        return;
       }
-      opStack_.pop();
-      opStack_.push(Op::kConstant);
+      op_stack_.pop();
+      op_stack_.push(Op::kConstant);
       break;
-     case '(':
+    case '(':
       Reduce(Op::kParenthesisHigh);
-      if (!valueStack_.empty()) {
-        opStack_.push(Op::kConcatenate);
+      if (!value_stack_.empty()) {
+        op_stack_.push(Op::kConcatenate);
       }
-      opStack_.push(Op::kParenthesisLow);
+      op_stack_.push(Op::kParenthesisLow);
       break;
     case '|':
       Reduce(Op::kSum);
-      opStack_.push(Op::kSum);
+      op_stack_.push(Op::kSum);
       break;
     case '?':
       Reduce(Op::kOptional);
-      if (opStack_.empty() || opStack_.top() == Op::kParenthesisLow) {
-        error_ = true; break;
+      if (op_stack_.empty() || op_stack_.top() == Op::kParenthesisLow) {
+        error_ = true;
+        break;
       }
-      opStack_.push(Op::kOptional);
+      op_stack_.push(Op::kOptional);
       break;
     case '+':
       Reduce(Op::kIterateAtLeastOnce);
-      if (opStack_.empty() || opStack_.top() == Op::kParenthesisLow) {
-        error_ = true; break;
+      if (op_stack_.empty() || op_stack_.top() == Op::kParenthesisLow) {
+        error_ = true;
+        break;
       }
-      opStack_.push(Op::kIterateAtLeastOnce);
+      op_stack_.push(Op::kIterateAtLeastOnce);
       break;
     case '*':
       Reduce(Op::kIterate);
-      if (opStack_.empty() || opStack_.top() == Op::kParenthesisLow) {
-        error_ = true; break;
+      if (op_stack_.empty() || op_stack_.top() == Op::kParenthesisLow) {
+        error_ = true;
+        break;
       }
-      opStack_.push(Op::kIterate);
+      op_stack_.push(Op::kIterate);
       break;
-     default:
+    default:
       Reduce(Op::kConcatenate);
-      if (!opStack_.empty() && (opStack_.top() == Op::kConcatenate
-                                || opStack_.top() == Op::kConstant)) {
-        opStack_.push(Op::kConcatenate);
+      if (!op_stack_.empty() && (op_stack_.top() == Op::kConcatenate ||
+                                 op_stack_.top() == Op::kConstant)) {
+        op_stack_.push(Op::kConcatenate);
       } else {
-        opStack_.push(Op::kConstant);
+        op_stack_.push(Op::kConstant);
       }
-      valueStack_.emplace(std::string(1, c));
+      value_stack_.emplace(std::string(1, c));
   }
 }
 
 std::optional<NFA> PrecedenceParser::Result() {
   Reduce(Op::kEof);
-  if (valueStack_.empty()) error_ = true;
+  if (value_stack_.empty()) error_ = true;
   if (error_) return std::nullopt;
-  NFA result = std::move(valueStack_.top());
-  valueStack_.pop();
+  NFA result = std::move(value_stack_.top());
+  value_stack_.pop();
   return std::make_optional(std::move(result));
 }
 
