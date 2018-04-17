@@ -1,6 +1,8 @@
 set(SOURCES
   nfa.h
   nfa.cc
+  dfa.h
+  dfa.cc
   parse.h
   precedence_parser.cc
 )

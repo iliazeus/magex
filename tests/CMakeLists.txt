@@ -4,6 +4,7 @@ add_subdirectory(../gtest ${CMAKE_BINARY_DIR}/gtest)
 
 set(SOURCES
     nfa.cc
+    dfa.cc
     parse.cc
 )
 
